@@ -1,13 +1,18 @@
 package com.fieldops.app.ui.incident
 
 import androidx.compose.ui.test.*
-import androidx.compose.ui.test.junit4.createAndroidComposeRule
+import androidx.compose.ui.test.junit4.createEmptyComposeRule
+import androidx.test.core.app.ActivityScenario
 import com.fieldops.app.MainActivity
+import com.fieldops.app.data.local.dao.IncidentDao
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
+import kotlinx.coroutines.runBlocking
+import org.junit.After
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
+import javax.inject.Inject
 
 @HiltAndroidTest
 class IncidentScreenTest {
@@ -16,11 +21,23 @@ class IncidentScreenTest {
     val hiltRule = HiltAndroidRule(this)
 
     @get:Rule(order = 1)
-    val composeRule = createAndroidComposeRule<MainActivity>()
+    val composeRule = createEmptyComposeRule()
+
+    @Inject lateinit var incidentDao: IncidentDao
+
+    private lateinit var scenario: ActivityScenario<MainActivity>
 
     @Before
     fun setup() {
         hiltRule.inject()
+        runBlocking { incidentDao.deleteAll() }
+        scenario = ActivityScenario.launch(MainActivity::class.java)
+        composeRule.waitForIdle()
+    }
+
+    @After
+    fun tearDown() {
+        scenario.close()
     }
 
     @Test
