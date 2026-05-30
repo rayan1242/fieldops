@@ -1,0 +1,41 @@
+# ---- Gradle ----
+.gradle/
+build/
+**/build/
+gradle-app.setting
+!gradle-wrapper.jar
+.gradletasknamecache
+
+# ---- Android Studio / IntelliJ ----
+.idea/
+*.iml
+*.iws
+*.ipr
+out/
+captures/
+.navigation/
+.externalNativeBuild/
+.cxx/
+
+# ---- Local machine config (never commit — paths differ per machine) ----
+local.properties
+
+# ---- Sensitive / credentials ----
+*.jks
+*.keystore
+keystore.properties
+google-services.json
+*.p12
+*.pem
+
+# ---- OS cruft ----
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# ---- VS Code ----
+.vscode/
+
+# ---- Test / coverage outputs ----
+app/build/reports/
+app/build/outputs/

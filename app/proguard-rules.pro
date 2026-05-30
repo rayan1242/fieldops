@@ -1,0 +1,3 @@
+-keep class com.fieldops.app.data.remote.dto.** { *; }
+-keepattributes Signature
+-keepattributes *Annotation*
