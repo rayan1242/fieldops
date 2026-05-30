@@ -106,6 +106,13 @@ Presentation  →  ViewModel  →  Repository  →  [ Room | Retrofit ]
 
 ## Testing Strategy
 
+**23 tests total — 23 passing — 0 failing**
+
+| Suite | Tests | Device | Status |
+|-------|-------|--------|--------|
+| JVM Unit Tests | 12 | Host JVM (JDK 17) | ✅ 12/12 |
+| Espresso Instrumented | 11 | Moto G Power 5G — Android 15 | ✅ 11/11 |
+
 ### Unit Tests — 12/12 Passing
 `IncidentViewModelTest` and `AssetViewModelTest` cover:
 - Filing an incident updates UI state to `Success`
