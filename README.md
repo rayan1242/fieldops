@@ -3,14 +3,6 @@
 A production-grade offline-first Android app simulating real-world incident reporting
 and asset tracking for first responders — built to demonstrate the kind of engineering
 decisions that matter in mission-critical field systems.
-
-## Screenshots
-
-<p float="left">
-  <img src="screenshots/incidents.jpeg" width="45%" alt="Incident Reports — form + live incidents pending sync"/>
-  <img src="screenshots/assets.jpeg" width="45%" alt="Asset Tracking — search by name, location or ID"/>
-</p>
-
 ---
 
 ## Purpose
