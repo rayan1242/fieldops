@@ -117,10 +117,31 @@ Presentation  →  ViewModel  →  Repository  →  [ Room | Retrofit ]
 All tests use `FakeRepository` implementations backed by `MutableStateFlow` —
 no real database, no real network, no Android runtime needed.
 
-### Instrumented Tests
-`IncidentScreenTest` and `AssetScreenTest` use Espresso + Hilt test runner
-to verify full UI flows: form submission, empty state display, and navigation.
-`HiltTestRunner` replaces the default runner so Hilt's test component is used.
+### Instrumented Tests (Espresso) — 11/11 Passing on Device
+
+Run on a **Moto G Power 5G (Android 15)** via wireless ADB.
+
+| Test | What it verifies |
+|------|-----------------|
+| `incidentScreen_showsCorrectly` | Incident Reports title renders on launch |
+| `addButton_showsForm` | Toggle button opens the File New Incident form |
+| `submittingWithoutLocation_showsError` | Validation rejects empty Location field |
+| `submittingWithoutDescription_showsError` | Validation rejects empty Description field |
+| `filingValidIncident_closesForm` | Valid submission dismisses the form |
+| `filedIncident_appearsInList` | Filed incident appears in the list below |
+| `emptyState_shownWhenNoIncidents` | Empty state shown when Room has no incidents |
+| `assetScreen_showsCorrectly` | Asset Tracking title renders after tab switch |
+| `searchBar_isDisplayed` | Search field visible on Asset screen |
+| `syncButton_isDisplayed` | Sync icon button present in top bar |
+| `emptyState_shownWhenNoAssets` | Empty state shown when no assets loaded |
+
+**Three bugs found and fixed during the Espresso run:**
+
+1. `IllegalStateException: The component was not created` — `createAndroidComposeRule<MainActivity>()` launches the activity inside its own `before()`, which runs after the rules complete but before `@Before`. At that point `hiltRule.inject()` hasn't been called yet, so the Hilt component doesn't exist when `onCreate` tries to inject the ViewModel. Fix: replaced with `createEmptyComposeRule()` + `ActivityScenario.launch()` manually inside `@Before`, after `hiltRule.inject()`.
+
+2. `No compose hierarchies found` (flaky on `syncButton_isDisplayed`) — `createEmptyComposeRule` doesn't block until the Compose hierarchy is registered with the test framework. Fix: added `composeRule.waitForIdle()` after activity launch.
+
+3. `emptyState_shownWhenNoIncidents` failing — the on-device Room database persists across test methods. Incidents filed by earlier tests in the same run left rows in the DB, so the empty state never appeared. Fix: added `@Query("DELETE FROM incidents") suspend fun deleteAll()` to `IncidentDao`, injected it into the test, and called it in `@Before` to reset state.
 
 ### Coverage
 JaCoCo is configured to enforce 85%+ line coverage. The `jacocoTestCoverageVerification`
@@ -166,6 +187,25 @@ those were correctly dispatched. It came from `WorkManager.getInstance()` in
 synchronously on the calling thread. Hilt's DI graph resolution and Compose's
 first composition also contribute. The Android Profiler flame chart confirmed
 the source before any code was changed.
+
+### Instrumented Test Isolation Requires Explicit DB Teardown
+Unit tests use fake in-memory repositories so each test starts clean.
+Instrumented tests use the real on-device Room database, which persists across
+test methods in the same run. A test that files an incident will corrupt the
+`emptyState` test that runs after it. The fix is to inject the DAO directly into
+the test class and call `deleteAll()` in `@Before` — not in `@After`, because a
+crashed test skips `@After` and leaves dirty state for the next test.
+
+### Hilt Component Lifecycle in Compose Tests Is Not Obvious
+The standard pattern `createAndroidComposeRule<MainActivity>()` fails with
+Hilt because the rule launches the activity in its own `before()` method, which
+executes inside the rule chain — before `@Before` methods run. The Hilt component
+doesn't exist yet when `MainActivity.onCreate()` tries to inject the ViewModel.
+The fix is `createEmptyComposeRule()` with a manual `ActivityScenario.launch()`
+inside `@Before`, after `hiltRule.inject()` has created the component. The
+`waitForIdle()` call after launch is also required — `createEmptyComposeRule`
+does not block until the Compose hierarchy is registered with the test framework,
+so the first node lookup can fail with "no compose hierarchies found" without it.
 
 ### CI/CD Caught Real Issues
 GitHub Actions runs `testDebugUnitTest` and the JaCoCo coverage check on every
