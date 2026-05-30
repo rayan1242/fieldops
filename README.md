@@ -7,7 +7,7 @@ decisions that matter in mission-critical field systems.
 
 ## Purpose
 
-Field operations systems like those used by Motorola Solutions must work in areas
+Field operations systems must work in areas
 with no connectivity — a dropped signal cannot mean lost data. This app was built
 to internalize that constraint: every architectural decision prioritizes data
 durability and correct offline behavior over simplicity.
